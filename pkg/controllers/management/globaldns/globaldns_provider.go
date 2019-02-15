@@ -93,6 +93,11 @@ func (n *ProviderLauncher) sync(key string, obj *v3.GlobalDNSProvider) (runtime.
 		return nil, err
 	}
 
+	if err := globalnamespacerbac.CreateRoleAndRoleBinding(globalnamespacerbac.GlobalDNSProviderResource, obj.Name,
+		obj.UID, obj.Spec.Members, creatorID, n.managementContext); err != nil {
+		return nil, err
+	}
+
 	//handle external-dns deployment
 	if obj.Spec.Route53ProviderConfig != nil {
 		return n.handleRoute53Provider(obj)
@@ -106,10 +111,6 @@ func (n *ProviderLauncher) sync(key string, obj *v3.GlobalDNSProvider) (runtime.
 		return n.handleAlidnsProvider(obj)
 	}
 
-	if err := globalnamespacerbac.CreateRoleAndRoleBinding(globalnamespacerbac.GlobalDNSProviderResource, obj.Name,
-		obj.UID, obj.Spec.Members, creatorID, n.managementContext); err != nil {
-		return nil, err
-	}
 	return nil, nil
 }
 

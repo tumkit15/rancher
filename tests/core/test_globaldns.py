@@ -20,6 +20,15 @@ def test_dns_fqdn_unique(admin_mc):
     globaldns_entry = \
         client.create_global_dns(fqdn=fqdn, providerId=provider_name)
 
+    # Make sure creator can access both, provider and entry
+    gdns_provider_id = "cattle-global-data:" + provider_name
+    gdns_provider = client.by_id_global_dns_provider(gdns_provider_id)
+    assert gdns_provider is not None
+
+    gdns_entry_id = "cattle-global-data:" + globaldns_entry.name
+    gdns = client.by_id_global_dns(gdns_entry_id)
+    assert gdns is not None
+
     with pytest.raises(ApiError) as e:
         client.create_global_dns(fqdn=fqdn, providerId=provider_name)
         assert e.value.error.status == 422
@@ -42,8 +51,9 @@ def test_dns_provider_deletion(admin_mc):
                                              'rootDomain': "example.com"})
 
     fqdn = random_str() + ".example.com"
+    provider_id = "cattle-global-data:"+provider_name
     globaldns_entry = \
-        client.create_global_dns(fqdn=fqdn, providerId=provider_name)
+        client.create_global_dns(fqdn=fqdn, providerId=provider_id)
 
     with pytest.raises(ApiError) as e:
         client.delete(globaldns_provider)
